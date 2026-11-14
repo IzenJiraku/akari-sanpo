@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "priority": 1,
+    "action": {
+      "type": "redirect",
+      "redirect": { "url": "https://izenjiraku.github.io/akari-sanpo/" }
+    },
+    "condition": {
+      "requestDomains": ["x.com", "twitter.com"],
+      "resourceTypes": ["main_frame"]
+    }
+  }
+]
