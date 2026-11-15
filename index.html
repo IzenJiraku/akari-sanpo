@@ -4868,10 +4868,10 @@ void main() {
       float sc = uRes.y / 720.0;                                  // keep the look the same at any resolution
       vec2 sp = vUv * uRes / max(sc, 0.5);
       // hand wobble: the whole picture drifts a hair, like a brush following a pencil line
-      vec2 wob = (vec2(fbm(sp * 0.012), fbm(sp * 0.012 + 17.0)) - 0.5) * 4.5 * px * max(sc, 0.5);
+      vec2 wob = (vec2(fbm(sp * 0.012), fbm(sp * 0.012 + 17.0)) - 0.5) * 1.6 * px * max(sc, 0.5);   /* S: houses bent as you moved past \u2014 the picture now barely drifts */
       // wet patches of the page: there the paint ran, so outlines wander more and colours seep into each other
       float wet0 = smoothstep(0.35, 0.75, fbm(sp * 0.0025 + 3.0));
-      wob += (vec2(vnoise(sp * 0.05 + 40.0), vnoise(sp * 0.05 + 71.0)) - 0.5) * (1.2 + 2.6 * wet0) * px * max(sc, 0.5) * uPaint;
+      wob += (vec2(vnoise(sp * 0.05 + 40.0), vnoise(sp * 0.05 + 71.0)) - 0.5) * 0.35 * px * max(sc, 0.5) * uPaint;
       vec2 uv = vUv + wob;
       if (uDot > 0.5) { vec2 cell = vec2(uDot) / uRes; uv = (floor(vUv / cell) + 0.5) * cell; }   // pixel-art prototype: chunky square pixels
       vec3 base = texture2D(tDiffuse, uv).rgb;
@@ -4894,10 +4894,10 @@ void main() {
         col = acc / wsum;
         col = mix(base, col, 0.9);
         // wet-in-wet: in the wetter patches neighbouring washes bleed into one another (a few wide, wandering taps)
-        { float ang = fbm(sp * 0.02 + 23.0) * 6.2832 * 2.0; vec2 dir = vec2(cos(ang), sin(ang)); vec2 rr = st * (3.5 + 4.5 * wet0);
+        { float ang = fbm(sp * 0.02 + 23.0) * 6.2832 * 2.0; vec2 dir = vec2(cos(ang), sin(ang)); vec2 rr = st * 2.5;
           vec3 wide = (texture2D(tDiffuse, uv + dir * rr).rgb + texture2D(tDiffuse, uv - dir * rr).rgb + texture2D(tDiffuse, uv + vec2(-dir.y, dir.x) * rr * 0.7).rgb + texture2D(tDiffuse, uv - vec2(-dir.y, dir.x) * rr * 0.7).rgb) * 0.25;
           float keep = smoothstep(0.5, 0.8, max(lum(base), lum(wide)));   // lights stay where they are
-          col = mix(col, wide, (0.16 + 0.3 * wet0) * (1.0 - keep)); }
+          col = mix(col, wide, 0.06 * (1.0 - keep)); }
         vec2 q = st * 1.2;
         float tl=lum(texture2D(tDiffuse,uv+q*vec2(-1, 1)).rgb), t=lum(texture2D(tDiffuse,uv+q*vec2(0, 1)).rgb), tr=lum(texture2D(tDiffuse,uv+q*vec2(1, 1)).rgb);
         float l=lum(texture2D(tDiffuse,uv+q*vec2(-1,0)).rgb), r=lum(texture2D(tDiffuse,uv+q*vec2(1,0)).rgb);
@@ -4941,9 +4941,9 @@ void main() {
       { float bq = fbm(sp * 0.007 + 31.0) + (vnoise(sp * 0.09) - 0.5) * 0.05;
         float rim = smoothstep(0.022, 0.0, abs(bq - 0.6)), inside = smoothstep(0.6, 0.66, bq);
         float soft = (1.0 - smoothstep(0.5, 0.8, L)) * (0.45 + 0.55 * wet);
-        col *= 1.0 - 0.0 * rim * soft; col *= 1.0 + 0.015 * inside * soft; }   /* S: the crinkled rims read as a haze stuck to the screen \u2014 rims off */
-      if (uDot < 0.5) col *= 0.91 + 0.14 * wash * (0.6 + 0.8 * wet) + 0.06 * blot - 0.11 * gran * max(mid, 0.0) * (1.4 - 0.8 * wet);
-      col *= mix(vec3(1.0), mix(vec3(1.035, 0.995, 0.95), vec3(0.96, 0.99, 1.04), blot), wet * 0.8);
+        col *= 1.0 - 0.0 * rim * soft; }   /* S: the crinkled rims read as a haze stuck to the screen \u2014 rims off */
+      if (uDot < 0.5) col *= 0.955 + 0.05 * wash + 0.02 * blot - 0.11 * gran * max(mid, 0.0) * (1.4 - 0.8 * wet);
+      col *= mix(vec3(1.0), mix(vec3(1.035, 0.995, 0.95), vec3(0.96, 0.99, 1.04), blot), wet * 0.2);
       // highlights fade to paper white
       vec3 paper = vec3(0.985, 0.965, 0.92);
       float sat = max(col.r, max(col.g, col.b)) - min(col.r, min(col.g, col.b));
@@ -4958,7 +4958,7 @@ void main() {
       if (uDot < 0.5) col *= 0.98 - 0.05 * fib;
       col = mix(col, paper * (0.9 + 0.1 * wash), (0.07 - 0.03 * uNight) * (1.0 - uRain * 0.7));
       // night is painted too: uneven blue-violet washes and blooms show in the dark instead of a flat fill
-      col += (vec3(0.05, 0.045, 0.065) * (wash - 0.45) * (0.7 + 0.8 * wet) + vec3(0.025, 0.03, 0.05) * (blot - 0.5)) * uNight * (1.0 - smoothstep(0.25, 0.6, L)) * 1.4;
+      col += (vec3(0.05, 0.045, 0.065) * (wash - 0.45) * (0.7 + 0.8 * wet) + vec3(0.025, 0.03, 0.05) * (blot - 0.5)) * uNight * (1.0 - smoothstep(0.25, 0.6, L)) * 0.4;   /* S: the pale drifting patches at night looked like floaters in the eye */
       vec2 c = vUv - 0.5; col *= 1.0 - dot(c, c) * 0.4;
       // every light (moon, stars, windows, lamps, the train going by) steps out of the painting:
       // it keeps its own clear colour and its bloom, brighter than the paper around it, so the night sparkles
