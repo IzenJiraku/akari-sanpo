@@ -5142,10 +5142,12 @@ vSeed = aSeed; vWUv = uv; vWP = (modelMatrix * vec4(position, 1.)).xyz;`),i.frag
     vec3 L = normalize(vec3(sin(th), 0.0, -cos(th)));
     vec3 n = rr < 1.0 ? vec3(vUv, sqrt(1.0 - r2)) : vec3(vUv / rr, 0.0);
     float ndl = dot(n, L);
-    float d = max(rr - 1.0, 0.0);
+    /* S (2026-11-18 \u591C): \u300C\u3064\u304D\u3001\u306A\u3093\u304B\u5E3D\u5B50\u307F\u305F\u3044\u300D \u2014 the dark part showed as a grey disc inside the halo (a crown with a brim). The halo now
+       spreads from the lit part only, and the dark part is not drawn at all: the round shape is only there where the light is */
+    vec2 c = vec2(sign(sin(th)) * 0.85 * pow(1.0 - full, 0.8), 0.0);
+    float rL = mix(0.45, 1.0, full);
+    float d = max(length(vUv - c) - rL, 0.0);
     float glow = (exp(-d * 2.6) * 0.5 + exp(-d * 0.9) * 0.22) * smoothstep(2.4, 1.4, rr) * (0.5 + 0.5 * full);
-    glow *= 0.3 + 0.7 * smoothstep(-0.7, 0.4, ndl);       // heavier where the light is, but never gone on the far side
-    glow *= 1.0 - 0.72 * smoothstep(1.02, 0.9, rr) * (1.0 - smoothstep(-0.3, 0.1, ndl));   // the unlit part sits a shade under the halo, so the round shape is only just there
     vec3 gc = vec3(1.0, 0.8, 0.44);
     float disc = smoothstep(1.0, 0.975, rr);
     float lit = smoothstep(-0.015, 0.09, ndl) * disc;
