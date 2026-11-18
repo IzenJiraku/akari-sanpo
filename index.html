@@ -5156,7 +5156,7 @@ vSeed = aSeed; vWUv = uv; vWP = (modelMatrix * vec4(position, 1.)).xyz;`),i.frag
     if (ce < 0.0) dd = xp >= 0.0 ? max(rr - 1.0, 0.0) : max(sdE, 0.0);                       // gibbous
     else dd = xp >= 0.0 ? max(max(rr - 1.0, -sdE), 0.0) : length(vec2(xp, max(abs(vUv.y) - 1.0, 0.0)) ) + max(0.0, 1.0 - abs(vUv.y)) * ea;   // crescent: toward the horns
     dd = mix(dd, max(rr - 1.0, 0.0), smoothstep(0.85, 1.0, full));
-    float glow = exp(-dd * 3.4) * 0.42 * (0.45 + 0.55 * full);
+    float glow = exp(-dd * 16.0) * 0.3 * (0.4 + 0.6 * full);   /* S 22:13: \u300C\u4E2D\u5FC3\u304B\u3089\u5149\u3063\u3066\u308B\u307F\u305F\u3044\u300D \u2014 a real crescent has almost no halo: only a thin breath hugging the lit edge */
     /* S (2026-11-18 21:27): \u300C\u6708\u306F1\u500B\u524D\u306E\u306B\u623B\u3057\u3066\u3002\u8272\u3082\u5927\u304D\u3055\u3082\u300D \u2014 back to the warm cream face of before (the halo still only from the lit part) */
     vec3 gc = vec3(1.0, 0.8, 0.44);
     float disc = smoothstep(1.0, 0.975, rr);
