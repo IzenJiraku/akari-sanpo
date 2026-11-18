@@ -33,6 +33,7 @@ body.nocur,body.nocur *{cursor:none!important}
 #landName{position:fixed;left:50%;top:30%;transform:translate(-50%,-50%);z-index:12;pointer-events:none;color:#fff;font-family:var(--mincho);font-size:clamp(16px,1.7vw,22px);letter-spacing:.5em;text-indent:.5em;white-space:nowrap;opacity:0;transition:opacity 2.6s ease;text-shadow:0 0 18px rgba(0,0,0,.6)}#landName.on{opacity:.88}#landName.low{top:auto;bottom:13%;transform:translateX(-50%);font-size:clamp(14px,1.3vw,18px)}
 #sleep{position:fixed;inset:0;z-index:40;background:#000;opacity:0;pointer-events:none;transition:opacity 6s ease;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;color:#fff;font-family:var(--mincho);letter-spacing:.34em;cursor:pointer}
 #sleep.on{opacity:1;pointer-events:auto}
+body:has(#sleep.on) #dock{opacity:0!important;pointer-events:none!important;transition:opacity 2s ease}   /* S (2026-11-19): on the morning screen the icons go away */
 #sleep.morning{background:#fff;color:#2a2620;cursor:default}
 #sleep .l1{font-size:clamp(15px,1.5vw,20px);font-weight:400;line-height:2.1;letter-spacing:.3em;opacity:.92}#sleep .go{position:absolute;left:0;right:0;bottom:16%;text-align:center;color:rgba(255,255,255,.42);font-size:13px;letter-spacing:.4em;opacity:0;transition:opacity 3s ease 8s}#sleep.on .go{opacity:1}
 
