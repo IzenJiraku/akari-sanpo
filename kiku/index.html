@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
+<title>ガタゴトの試し聞き</title>
+<style>
+body{margin:0;min-height:100vh;background:#0e1220;color:#eee8dc;font:15px/1.9 "Hiragino Mincho ProN","Yu Mincho",serif;display:flex;justify-content:center;align-items:center}
+main{max-width:520px;padding:40px 24px}
+h1{font-weight:400;font-size:18px;letter-spacing:.2em;margin:0 0 6px}
+p{opacity:.6;margin:0 0 26px;font-size:13px}
+.row{display:flex;align-items:baseline;gap:14px;padding:9px 0;cursor:pointer;border-bottom:1px solid rgba(238,232,220,.12)}
+.row b{font-weight:400;width:1.4em;opacity:.7}.row span{flex:1}.row i{font-style:normal;opacity:.45;font-size:12px}
+.row.on span{color:#ffd59a}
+.bed{margin-top:26px;font-size:13px;opacity:.85}.bed label{margin-right:16px;cursor:pointer}
+.stop{margin-top:22px;opacity:.5;cursor:pointer;font-size:13px}
+</style></head><body><main>
+<h1>ガタゴトの試し聞き</h1>
+<p>押すと汽車が十五秒ほど通ります。気に入った記号を教えてください。</p>
+<div id="list"></div>
+<div class="bed">下に流れる走る音：
+<label><input type="radio" name="bed" value="bed-kiha" checked> キハ52</label>
+<label><input type="radio" name="bed" value="bed-103"> 103系（いまの）</label>
+<label><input type="radio" name="bed" value=""> なし</label></div>
+<div class="stop" id="stop">とめる</div>
+</main>
+<script>
+const C=[['A','いまの音（小田急の継ぎ目）','A-odakyu-now',4],['B','キハ52の継ぎ目、そのまま','B-kiha-raw',8],['C','キハ52の継ぎ目、ザザッを削った','C-kiha-clean',8],['D','小田急の継ぎ目、ザザッを削った','D-odakyu-clean',4],['E','キハ52の継ぎ目、もっと短くキレよく','E-kiha-crisp',8]];
+let ctx,cache={},run=null;
+const load=id=>cache[id]||(cache[id]=fetch(id+'.mp3').then(r=>r.arrayBuffer()).then(b=>ctx.decodeAudioData(b)));
+function stop(){if(!run)return;const n=ctx.currentTime;run.g.gain.cancelScheduledValues(n);run.g.gain.setTargetAtTime(0,n,0.3);const r=run;setTimeout(()=>r.srcs.forEach(s=>{try{s.stop()}catch(e){}}),1500);run=null;document.querySelectorAll('.row').forEach(e=>e.classList.remove('on'));}
+async function play(c,el){
+  ctx=ctx||new AudioContext();await ctx.resume();stop();el.classList.add('on');
+  const bedId=document.querySelector('input[name=bed]:checked').value;
+  const [jb,bb]=await Promise.all([load(c[2]),bedId?load(bedId):null]);
+  const g=ctx.createGain(),t0=ctx.currentTime+0.1,T=15;g.connect(ctx.destination);
+  g.gain.setValueAtTime(0,t0);g.gain.linearRampToValueAtTime(1,t0+3);g.gain.setValueAtTime(1,t0+T-4);g.gain.linearRampToValueAtTime(0,t0+T);
+  const srcs=[];const r={g,srcs};run=r;
+  if(bb){const s=ctx.createBufferSource(),bg=ctx.createGain();s.buffer=bb;s.loop=true;bg.gain.value=0.5;s.connect(bg);bg.connect(g);s.start(t0,Math.random()*5);s.stop(t0+T);srcs.push(s);}
+  const lp=ctx.createBiquadFilter();lp.type='lowpass';lp.frequency.value=2600;const cg=ctx.createGain();cg.gain.value=1;lp.connect(cg);cg.connect(g);
+  for(let t=t0+0.6;t<t0+T-0.6;t+=1.55){const s=ctx.createBufferSource();s.buffer=jb;s.playbackRate.value=0.96+Math.random()*0.08;s.connect(lp);s.start(t,((Math.random()*c[3])|0)*0.6,0.58);srcs.push(s);}
+  setTimeout(()=>{if(run===r){el.classList.remove('on');run=null}},T*1000);
+}
+const L=document.getElementById('list');
+for(const c of C){const d=document.createElement('div');d.className='row';d.innerHTML=`<b>${c[0]}</b><span>${c[1]}</span>`;d.onclick=()=>play(c,d);L.appendChild(d);}
+document.getElementById('stop').onclick=stop;
+</script></body></html>
